@@ -1,16 +1,16 @@
 window.App = (() => {
   class Signal {
     value;
-    dependencies = [];
+    deps = [];
     constructor(value) {
-      this.value = value; this.dependencies = []
+      this.value = value; this.deps = []
     }
     set(setter) {
       this.value = setter(this.value);
       this.notify();
     }
     notify() {
-      this.dependencies.forEach(it => it());
+      this.deps.forEach(it => it());
     }
   }
 
@@ -154,7 +154,7 @@ window.App = (() => {
         if (typeof key === "symbol") return;
         const signal = target[key];
         if (silentRegisterCaller) {
-          signal.dependencies.push(silentRegisterCaller);
+          signal.deps.push(silentRegisterCaller);
         }
         return signal;
       }
