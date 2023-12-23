@@ -1,35 +1,43 @@
 # Not a Framework
 
-**This is an experiment** in removing the complexity of modern frontend development. 
-For more context, watch this video: [The Web is Borken. Let's fix it!](https://youtu.be/TaP9Wc_gkI0)
+_Contributions and ideas are welcome!_
 
-**The goal** is to enhance HTML received from the server, and make it interactive via a handful of special DOM attriutes:
+**This is an experiment** in removing the complexity of modern frontend development.
+For more context, watch this video. [The Web is Borken. Let's fix it!](https://youtu.be/TaP9Wc_gkI0)
 
-- `x-on` - to register event handlers for various events. Handlers can be either JS code or HTTP Verbs and URLs;
-- `x-bind` - to bind DOM elements to Signals;
-- `x-to` and `x-html` - to modify DOM content; 
+**The goal** is to enhance HTML received from the server, and make it interactive in a seamless way. This is currently achieved using only two building blocks:
+- Events captured via `@` DOM attributes. (Example: `@click`, `@keyup`, `@load`)
+- DOM bindings via `:` DOM attributes. (Example: `:value`, `:class`, `:html`)
 
-### HTML Example
+
+### HTML Basic Example
 
 ```
- <div x-bind:class="'chat ' + (open.value ? 'open' : 'close')">
-    <header>
-      <h3>Awesome Chat</h3>
-      <button x-on:click="open.set(old => !old)">⬇️</button>
-    </header>
-    <main id="messages" x-html="/messages" x-pool="1s"></main>
-    <footer>
-      <input name="message" x-on:enter="post:/messages" x-to:append="#messages" />
-    </footer>
-  </div>
+<main :state="{count: 0}">
+    <h1 :html="count.val" @load="get:/count"></h1>
 
-  <script src="//naf.js"></script>
-  <script defer>
-    App.init({
-      open: true
-    });
-  </script>
+    <button @click="count.set(old => old + 1)">+1</button>
+    <button @dblclick="count.set(old => old + 10)">+10</button>
+
+    <button name="count" :value="count.val" @click="post:/count">Save</button>
+</main>
   ```
+
+### Events
+- You can capture all standard DOM events (`@click`, `@dblclick`, ...);
+- You have access to 3 special events:
+    - `@enter` - keyup event with Enter pressed;
+    - `@escape` - keyup event with Escape pressed;
+    - `@load` - DOM element is loaded in the page.
+- Attribute values can be:
+    - Server calls `method:<url>` which will be performed asynchronously to change server state;
+    - JS code to change local signal based state.
+
+### Bindings
+- You can bind any DOM attribute to a Signal value (`:name`, `:value`, ...)
+- You have access to 2 special bindings:
+    - `:state` accepts a JS objects and adds Signals to the local state;
+    -  `:html` to bind the element.innerHTML to a Signal.
 
 ### Inspiration
 The code is heavily inspired by:

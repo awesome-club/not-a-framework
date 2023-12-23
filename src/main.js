@@ -1,74 +1,68 @@
 window.App = (() => {
   class Signal {
-    value;
+    val;
     deps = [];
-    constructor(value) {
-      this.value = value; this.deps = []
+
+    constructor(val) {
+      this.val = val;
+      this.deps = []
     }
+
     set(setter) {
-      this.value = setter(this.value);
+      this.val = typeof setter === "function" ? setter(this.val) : setter;
       this.notify();
     }
+
     notify() {
       this.deps.forEach(it => it());
     }
   }
 
+  const KEYUP_EVENTS = ["enter", "escape"];
+  let $state = null;
+  let events = new Set();
   let silentRegisterCaller = null;
 
-  function checkBindings(parent) {
-    const elements = [...parent.querySelectorAll("*")]
-      .filter(it => [...it.attributes].find(attr => attr.name.startsWith("x-bind")));
-
-    elements.forEach(it => {
-      const key = it.getAttributeNames().find(it => it.startsWith("x-bind"));
-      const code = it.getAttribute(key);
-      const extractor = new Function(`with(arguments[0]) { return ${code}}`);
-      silentRegisterCaller = function() {
-        if (key.indexOf(":") > -1) {
-          const attr = key.split(":")[1];
-          it.setAttribute(attr, extractor(App.$state));
-        } else {
-          it.innerHTML = extractor(App.$state);
-        }
-      }
-      silentRegisterCaller();
-      silentRegisterCaller = null;
-    });
-  }
+  const func = (code) => new Function(`with({...arguments[0], ...arguments[1]}) { return ${code} }`);
 
   function extract({type, target, key}) {
-    let value = target.getAttribute(`x-on:${type}`);
-    if (!value) {
-      value = target.getAttribute(`x-on:${key.toLowerCase()}`);
-    }
+    return [target.getAttribute(`@${type}`), target.getAttribute(`@${(key ?? "").toLowerCase()}`)]
+      .filter(it => !!it)
+      .map(value => {
+        if (value.indexOf(":/") > -1) {
+          const [method, url] = value.split(":");
+          const cfg = {
+            method,
+            url,
+            before: target.getAttribute("before")
+          }
 
-    if (value.indexOf(":/") === -1) {
-      return { code: value };
-    } else {
-      const [method, url] = value.split(":");
-      const to = [...target.attributes].find(it => it.name.startsWith("x-to"));
+          const to = [...target.attributes].find(it => it.name.startsWith("to"));
+          if (to) {
+            cfg.to = {
+              swap: to.name.indexOf(":") > -1 ? to.name.split(":")[1] : "replace",
+              target: to.value
+            }
+          }
 
-      return {
-        method,
-        url,
-        to: {
-          swap: to.name.indexOf(":") > -1 ? to.name.split(":")[1] : "replace",
-          target: to.value
-        },
-        confirm: target.getAttribute("x-confirm")
-      }
-    }
+          return cfg;
+        } else {
+          return {
+            code: value,
+            before: target.getAttribute("before")
+          };
+        }
+      })
   }
 
-  function isTargetedElement({target, type, key}) {
-    if (target.hasAttribute(`x-on:${type}`)) return true;
-    if (type === "keyup" && target.hasAttribute(`x-on:${key.toLowerCase()}`)) return true;
+  function isElement({target, type, key}) {
+    if (target.hasAttribute(`@${type}`)) return true;
+    if (type === "keyup" && target.hasAttribute(`@${key.toLowerCase()}`)) return true;
   }
 
   function getPayload(el) {
     const payload = {};
-    if (el.tagName === "INPUT") {
+    if (el.tagName === "INPUT" || el.tagName === "BUTTON") {
       payload[el.name] = el.value;
     }
     return payload;
@@ -77,80 +71,99 @@ window.App = (() => {
   async function call(el, {url, method, to}) {
     const payload = getPayload(el);
 
-    const resp = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    const init = {method};
+    if (Object.keys(payload).length > 0) {
+      init.headers = {"Content-Type": "application/json"};
+      init.body = JSON.stringify(payload);
+    }
 
-    [...document.querySelectorAll(to.target)].forEach(async it => {
+    const resp = await fetch(url, init);
+
+    if (to) {
       const html = await resp.text();
-      if (to.swap === "prepend" || to.swap === "append") {
-        it.insertAdjacentHTML(to.swap === "append" ? "beforeend" : "afterbegin", html);
+
+      if (to === "el") {
+        el.innerHTML = html;
       } else {
-        it.innerHTML = html;
-      }
-    });
-  }
-
-  async function listener(ev) {
-    if (!isTargetedElement(ev)) return;
-
-    const cfg = extract(ev);
-    if (cfg.code) {
-      const func = new Function(`with(arguments[0]) {${cfg.code}}`);
-      func(App.$state);
-    } else {
-      if (!cfg.confirm) {
-        call(ev.target, cfg);
-      } else if (cfg.confirm) {
-        if (confirm(cfg.confirm ?? "Are you sure?")) {
-          call(ev.target, cfg);
-        }
+        [...document.querySelectorAll(to.target)].forEach(async it => {
+          if (to.swap === "prepend" || to.swap === "append") {
+            it.insertAdjacentHTML(to.swap === "append" ? "beforeend" : "afterbegin", html);
+          } else {
+            it.innerHTML = html;
+          }
+        });
       }
     }
   }
 
-  const KEYUP_EVENTS = ["enter", "esc"];
+  async function listener(ev) {
+    if (!isElement(ev)) return;
+    const cfg = extract(ev)
+    cfg.forEach(it => {
+      if (it.before) {
+        func(it.before)($state, {$ev: ev});
+      }
+      if (it.code) {
+        func(it.code)($state, {$ev: ev});
+      } else {
+        call(ev.target, it);
+      }
+    })
+  }
 
-  function init(data) {
-    [...document.querySelectorAll("*")]
-      .map(it => {
-        const attr = [...it.attributes].find(attr => attr.name.startsWith("x-on"));
-        if (!attr) return "";
-        return attr.name.indexOf(":") > -1 ? attr.name.split(":")[1] : attr.name;
-      })
-      .filter(it => !!it)
-      .forEach(it => {
-        if (KEYUP_EVENTS.indexOf(it) === -1) {
-          document.body.addEventListener(it, listener);
-        } else {
-          document.body.addEventListener("keyup", ev => {
-            if (ev.code.toLowerCase() === it) listener(ev);
-          });
+  function setup(el) {
+    // Events
+    [...el.attributes]
+      .filter(({name}) => name.startsWith("@"))
+      .map(({name}) => name.replace("@", ""))
+      .forEach(ev => {
+        if (ev === "load") {
+          const [method, url] = el.getAttribute("@load").split(":");
+          call(el, {url, method, to: "el"});
+        } else if (!events.has(ev)) {
+          events.add(ev);
+          if (KEYUP_EVENTS.indexOf(ev) === -1) {
+            document.body.addEventListener(ev, listener);
+          } else {
+            document.body.addEventListener("keyup", key => {
+              if (key.code.toLowerCase() === ev) listener(key);
+            });
+          }
         }
       });
 
-    [...document.querySelectorAll("[x-html]")].forEach(it => {
-      async function get() {
-        const resp = await fetch(it.getAttribute("x-html"));
-        it.innerHTML = await resp.text();
-      }
-      get();
-      let pool = it.getAttribute("x-pool");
-      if (pool) {
-        let raw = parseFloat(pool);
-        pool = pool.indexOf("m") > -1 ? raw * 60 : raw;
-        setInterval(get, pool * 1000);
-      }
-    });
+    // Bindings
+    [...el.attributes]
+      .filter(({name}) => name.startsWith(":"))
+      .forEach(({name, value}) => {
+        const extractor = func(value);
+        silentRegisterCaller = function () {
+          const attr = name.replace(":", "");
+          if (attr === "html") {
+            el.innerHTML = extractor($state, {});
+          } else {
+            el.setAttribute(attr, extractor($state, {}));
+          }
+        }
+        silentRegisterCaller();
+        silentRegisterCaller = null;
+      })
 
-    const signals = {};
-    Object.entries(data).forEach(([key, value]) => {
-      signals[key] = new Signal(value);
+    el.dataset.bound = true;
+  }
+
+  function setupState(el) {
+    const state = JSON.parse(el.getAttribute(":state").replace(/(\w+):/g, '"$1":'));
+    Object.keys(state).forEach(key => {
+      if (!$state.hasOwnProperty(key)) {
+        $state[key] = new Signal(state[key]);
+      }
     });
-    App.$state = new Proxy(signals, {
-      get(target, key){
+  }
+
+  function init(data) {
+    $state = new Proxy({}, {
+      get(target, key) {
         if (typeof key === "symbol") return;
         const signal = target[key];
         if (silentRegisterCaller) {
@@ -159,10 +172,17 @@ window.App = (() => {
         return signal;
       }
     });
-    checkBindings(document.body);
+
+    const $elements = [...document.querySelectorAll("*")]
+      .filter(el => [...el.attributes].find(({name}) => name.startsWith(":") || name.startsWith("@")));
+
+    $elements
+      .filter(el => el.hasAttribute(":state"))
+      .forEach(setupState)
+
+    $elements.forEach(setup);
   }
 
-  return {
-    init
-  }
+  init();
+  return {$state};
 })();
