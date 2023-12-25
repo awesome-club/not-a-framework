@@ -5,7 +5,7 @@ _Contributions and ideas are welcome!_
 **This is an experiment** in removing the complexity of modern frontend development.
 For more context, watch this video. [The Web is Borken. Let's fix it!](https://youtu.be/TaP9Wc_gkI0)
 
-**The goal** is to enhance HTML received from the server, and make it interactive in a seamless way. This is currently achieved using only two building blocks:
+**The goal** is to enhance HTML received from the server, and make it interactive in a seamless manner. This is currently achieved using only two building blocks:
 - Events captured via `@` DOM attributes. (Example: `@click`, `@keyup`, `@load`)
 - DOM bindings via `:` DOM attributes. (Example: `:value`, `:class`, `:html`)
 
@@ -13,31 +13,49 @@ For more context, watch this video. [The Web is Borken. Let's fix it!](https://y
 ### HTML Basic Example
 
 ```
-<main :state="{count: 0}">
+  <main :state="{count: {{.Count}}}">
+    <!-- Make a get call to "/count" to populate the element when loaded in the page.
+         Once loaded, bound the element's innert html to the count signal. -->
     <h1 :html="count.val" @load="get:/count"></h1>
 
+    <!-- Decrease the count signal value by one on click. -->
+    <button @click="count.set(old => old - 1)">-1</button>
+    
+    <!-- Increase the count signal value by one on click. -->
     <button @click="count.set(old => old + 1)">+1</button>
-    <button @dblclick="count.set(old => old + 10)">+10</button>
+    
+    <!-- Increase the count signal value by ten on double click.
+         Hide the button when the signal value is larger than ten. -->
+    <button @dblclick="count.set(old => old + 10)" :show="count.val < 10">+10</button>
 
-    <button name="count" :value="count.val" @click="post:/count">Save</button>
-</main>
+    <!-- Sent an async post request to the server on click with the name and value attributes as payload. -->
+    <button @click="post:/count" name="count" :value="count.val">Save</button>
+    <!-- Sent an async delete request to the server on click. -->
+    <button @click="delete:/count">Delete</button>
+  </main>
   ```
 
 ### Events
 - You can capture all standard DOM events (`@click`, `@dblclick`, ...);
 - You have access to 3 special events:
-    - `@enter` - keyup event with Enter pressed;
-    - `@escape` - keyup event with Escape pressed;
-    - `@load` - DOM element is loaded in the page.
+  - `@enter` - keyup event with Enter pressed;
+  - `@escape` - keyup event with Escape pressed;
+  - `@load` - DOM element is loaded in the page.
 - Attribute values can be:
-    - Server calls `method:<url>` which will be performed asynchronously to change server state;
-    - JS code to change local signal based state.
+  - Server calls `method:<url>` which will be performed asynchronously to change server state;
+  - JS code to change local signal based state.
 
 ### Bindings
 - You can bind any DOM attribute to a Signal value (`:name`, `:value`, ...)
 - You have access to 2 special bindings:
-    - `:state` accepts a JS objects and adds Signals to the local state;
-    -  `:html` to bind the element.innerHTML to a Signal.
+  - `:state` accepts a JS objects and adds Signals to the local state;
+  - `:html` to bind the element.innerHTML to a Signal;
+  - `:show` to bind the element.style.display to `block` or `nonde`.
+
+| Number of Lines  | Size Minified | Size Gzipped |
+|------------------|---------------|--------------|
+| 190              | 2.6kb         | 1.3kb        |
+
 
 ### Inspiration
 The code is heavily inspired by:
