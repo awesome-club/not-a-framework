@@ -42,6 +42,6 @@ For more context, watch this video. [The Web is Borken. Let's fix it!](https://y
 ### Inspiration
 The code is heavily inspired by:
 - [HTMX's](https://htmx.org/) server communication;
-- [Alpine's](https://alpinejs.dev/) power;
+- [Alpine's](https://alpinejs.dev/) DX;
 - [Solid's](https://www.solidjs.com/) reactivity;
-- [Van's](https://vanjs.org/) simplicity
+- [Van's](https://vanjs.org/) simplicity.

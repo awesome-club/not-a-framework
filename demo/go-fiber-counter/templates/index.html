@@ -3,12 +3,15 @@
   <main :state="{count: {{.Count}}}">
     <h1 :html="count.val" @load="get:/count"></h1>
 
-    <button @click="count.set(old => old + 1)">+1</button>
-    <button @dblclick="count.set(old => old + 10)">+10</button>
+    <button @click="count.set(old => old - 1)">-1</button>
+
+    <button @click="count.set(old => old + 1)" :show="count.val < 20">+1</button>
+    <button @dblclick="count.set(old => old + 10)" :show="count.val < 20">+10</button>
 
     <button name="count" :value="count.val" @click="post:/count">Save</button>
+    <button @click="delete:/count">Delete</button>
 
-    <script src="/static/index.js"></script>
+    <script src="/static/main.js"></script>
   </main>
 </body>
 </html>

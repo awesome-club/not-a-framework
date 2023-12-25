@@ -48,8 +48,11 @@ func main() {
 			log.Fatal(err)
 		}
 		cachedCount = b.Count
-		log.Println(b.Count)
-		log.Println(cachedCount)
+		return c.NoContent(http.StatusOK)
+	})
+
+	e.DELETE("/count", func(c echo.Context) error {
+		cachedCount = "0"
 		return c.NoContent(http.StatusOK)
 	})
 

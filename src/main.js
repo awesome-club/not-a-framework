@@ -134,12 +134,14 @@ window.App = (() => {
 
     // Bindings
     [...el.attributes]
-      .filter(({name}) => name.startsWith(":"))
+      .filter(({name}) => name.startsWith(":") && name.indexOf(":state") === -1)
       .forEach(({name, value}) => {
         const extractor = func(value);
         silentRegisterCaller = function () {
           const attr = name.replace(":", "");
-          if (attr === "html") {
+          if (attr === "show") {
+            el.style.display = extractor($state, {}) ? "block" : "none";
+          } else if (attr === "html") {
             el.innerHTML = extractor($state, {});
           } else {
             el.setAttribute(attr, extractor($state, {}));
@@ -149,7 +151,7 @@ window.App = (() => {
         silentRegisterCaller = null;
       })
 
-    el.dataset.bound = true;
+    el.dataset.bound = "true";
   }
 
   function setupState(el) {
@@ -161,7 +163,7 @@ window.App = (() => {
     });
   }
 
-  function init(data) {
+  function init() {
     $state = new Proxy({}, {
       get(target, key) {
         if (typeof key === "symbol") return;
