@@ -13,7 +13,8 @@ For more context, watch this video. [The Web is Borken. Let's fix it!](https://y
 ### HTML Basic Example
 
 ```
-  <main :state="{count: {{.Count}}}">
+  <!-- Define a count signal in the scope $state object. -->
+  <main :state="{count: 0}">
     <!-- Make a get call to "/count" to populate the element when loaded in the page.
          Once loaded, bound the element's innert html to the count signal. -->
     <h1 :html="count.val" @load="get:/count"></h1>
@@ -30,6 +31,7 @@ For more context, watch this video. [The Web is Borken. Let's fix it!](https://y
 
     <!-- Sent an async post request to the server on click with the name and value attributes as payload. -->
     <button @click="post:/count" name="count" :value="count.val">Save</button>
+    
     <!-- Sent an async delete request to the server on click. -->
     <button @click="delete:/count">Delete</button>
   </main>
