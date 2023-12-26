@@ -45,7 +45,9 @@ For more context, watch this video. [The Web is Borken. Let's fix it!](https://y
   - `@load` - DOM element is loaded in the page.
 - Attribute values can be:
   - Server calls `method:<url>` which will be performed asynchronously to change server state;
-  - JS code to change local signal based state.
+    - Elements triggering server calls can have a `to`, `to:prepend` or `to:append` attribute defining a target element whenre the server response would be inserted.
+  - JS code to change local signal based state;
+  - Elements triggering events can have a `before` attribute which executes JS code. If the before function returns false, the event handler will not be executed.
 
 ### Bindings
 - You can bind any DOM attribute to a Signal value (`:name`, `:value`, ...)
@@ -54,9 +56,9 @@ For more context, watch this video. [The Web is Borken. Let's fix it!](https://y
   - `:html` to bind the element.innerHTML to a Signal;
   - `:show` to bind the element.style.display to `block` or `nonde`.
 
-| Number of Lines  | Size Minified | Size Gzipped |
-|------------------|---------------|--------------|
-| 190              | 2.6kb         | 1.3kb        |
+| Number of Lines | Size Minified | Size Gzipped |
+|-----------------|---------------|--------------|
+| 201             | 2.7kb         | 1.3kb        |
 
 
 ### Inspiration

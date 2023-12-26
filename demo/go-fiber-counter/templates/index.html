@@ -8,9 +8,9 @@
     <button @click="count.set(old => old + 1)" :show="count.val < 20">+1</button>
     <button @dblclick="count.set(old => old + 10)" :show="count.val < 20">+10</button>
 
-    <button name="count" :value="count.val" @click="post:/count">Save</button>
-    <button @click="delete:/count">Delete</button>
-
+    <footer id="server-actions">
+      <button name="count" :value="count.val" @click="post:/count" to:append="#server-actions">Save</button>
+    </footer>
     <script src="/static/main.js"></script>
   </main>
 </body>

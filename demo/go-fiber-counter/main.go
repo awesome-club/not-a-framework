@@ -48,7 +48,7 @@ func main() {
 			log.Fatal(err)
 		}
 		cachedCount = b.Count
-		return c.NoContent(http.StatusOK)
+		return c.Render(200, "delete.html", nil)
 	})
 
 	e.DELETE("/count", func(c echo.Context) error {
