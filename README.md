@@ -3,11 +3,13 @@
 _Contributions and ideas are welcome!_
 
 **This is an experiment** in removing the complexity of modern frontend development.
-For more context, watch this video. [The Web is Broken. Let's fix it!](https://youtu.be/TaP9Wc_gkI0)
+For more context, watch these videos:
+- [The Web is Broken. Let's fix it!](https://youtu.be/TaP9Wc_gkI0)
+- [What I Learned From Building a Framework](https://youtu.be/qzQ8fKLDUyo)
 
-**The goal** is to enhance HTML received from the server, and make it interactive in a seamless manner. This is currently achieved using only two building blocks:
-- Events captured via `@` DOM attributes. (Example: `@click`, `@keyup`, `@load`)
-- DOM bindings via `:` DOM attributes. (Example: `:value`, `:class`, `:html`)
+**The goal** is to enhance the  HTML received from the server, and make it interactive in a seamless manner. This is achieved using only two building blocks:
+- Event listeners registered  via `@` DOM attributes. (Example: `@click`, `@keyup`, `@load`)
+- Reactive bindings via `:` DOM attributes. (Example: `:value`, `:class`, `:html`)
 
 
 ### HTML Basic Example

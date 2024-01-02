@@ -128,35 +128,37 @@ window.App = (() => {
   }
 
   function setup(el) {
-    [...el.attributes].forEach((evt) => {
-      const prefixChar = evt.name.at(0);
-      const evtName = evt.name.slice(1);
+    [...el.attributes].forEach(({name, value}) => {
+      const prefix = name[0];
+      const event = name.slice(1);
+
       // Events
-      if (prefixChar === "@") {
-        if (evtName === "load") {
+      if (prefix === "@") {
+        if (event === "load") {
           const [method, url] = el.getAttribute("@load").split(":");
           call(el, { url, method, to: "el" });
-        } else if (!events.has(evtName)) {
-          events.add(evtName);
-          if (KEYUP_EVENTS.indexOf(evtName) === -1) {
-            document.body.addEventListener(evtName, listener);
+        } else if (!events.has(event)) {
+          events.add(event);
+          if (KEYUP_EVENTS.indexOf(event) === -1) {
+            document.body.addEventListener(event, listener);
           } else {
             document.body.addEventListener("keyup", (key) => {
-              if (key.code.toLowerCase() === evtName) listener(key);
+              if (key.code.toLowerCase() === event) listener(key);
             });
           }
         }
       }
+
       // Bindings
-      if (prefixChar === ":") {
-        const extractor = func(evt.value);
+      if (prefix === ":") {
+        const extractor = func(value);
         silentRegisterCaller = function () {
-          if (evtName === "show") {
+          if (event === "show") {
             el.style.display = extractor($state, {}) ? "block" : "none";
-          } else if (attr === "html") {
+          } else if (event === "html") {
             el.innerHTML = extractor($state, {});
           } else {
-            el.setAttribute(attr, extractor($state, {}));
+            el.setAttribute(event, extractor($state, {}));
           }
         };
         silentRegisterCaller();
@@ -167,9 +169,7 @@ window.App = (() => {
   }
 
   function setupState(el) {
-    const state = JSON.parse(
-      el.getAttribute(":state").replace(/(\w+):/g, '"$1":')
-    );
+    const state = JSON.parse(el.getAttribute(":state").replace(/(\w+):/g, '"$1":'));
     Object.keys(state).forEach((key) => {
       if (!$state.hasOwnProperty(key)) {
         $state[key] = new Signal(state[key]);
@@ -190,9 +190,7 @@ window.App = (() => {
   }
 
   function init() {
-    $state = new Proxy(
-      {},
-      {
+    $state = new Proxy({}, {
         get(target, key) {
           if (typeof key === "symbol") return;
           const signal = target[key];

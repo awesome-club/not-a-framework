@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <body>
-  <main :state="{count: {{.Count}}}">
+  <main :state="{count: {{.Count}}, name: null}">
     <h1 :html="count.val" @load="get:/count"></h1>
 
     <button @click="count.set(old => old - 1)">-1</button>
@@ -11,6 +11,12 @@
     <footer id="server-actions">
       <button name="count" :value="count.val" @click="post:/count" to:append="#server-actions">Save</button>
     </footer>
+
+    <hr />
+
+    <h2 :html="count.val + ' ' + name.val"></h2>
+    <input @keyup="name.set($ev.target.value)" />
+
     <script src="/static/main.js"></script>
   </main>
 </body>
