@@ -153,10 +153,10 @@ window.App = (() => {
         silentRegisterCaller = function () {
           if (evtName === "show") {
             el.style.display = extractor($state, {}) ? "block" : "none";
-          } else if (attr === "html") {
+          } else if (evtName === "html") {
             el.innerHTML = extractor($state, {});
           } else {
-            el.setAttribute(attr, extractor($state, {}));
+            el.setAttribute(evtName, extractor($state, {}));
           }
         };
         silentRegisterCaller();
