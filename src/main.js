@@ -128,45 +128,40 @@ window.App = (() => {
   }
 
   function setup(el) {
-    // Events
     [...el.attributes].forEach((evt) => {
-      const [prefixChar, ...evtName] = evt.name;
-      if (prefixChar !== "@") {
-        return;
-      }
-      if (evtName === "load") {
-        const [method, url] = el.getAttribute("@load").split(":");
-        call(el, { url, method, to: "el" });
-      } else if (!events.has(evtName)) {
-        events.add(evtName);
-        if (KEYUP_EVENTS.indexOf(evtName) === -1) {
-          document.body.addEventListener(evtName, listener);
-        } else {
-          document.body.addEventListener("keyup", (key) => {
-            if (key.code.toLowerCase() === evtName) listener(key);
-          });
+      const prefixChar = evt.name.at(0);
+      const evtName = evt.name.slice(1);
+      // Events
+      if (prefixChar === "@") {
+        if (evtName === "load") {
+          const [method, url] = el.getAttribute("@load").split(":");
+          call(el, { url, method, to: "el" });
+        } else if (!events.has(evtName)) {
+          events.add(evtName);
+          if (KEYUP_EVENTS.indexOf(evtName) === -1) {
+            document.body.addEventListener(evtName, listener);
+          } else {
+            document.body.addEventListener("keyup", (key) => {
+              if (key.code.toLowerCase() === evtName) listener(key);
+            });
+          }
         }
       }
-    });
-    // Bindings
-    [...el.attributes].forEach((evt) => {
-      const [prefixChar, ...evtName] = evt.name;
-      if (prefixChar !== ":") {
-        return;
+      // Bindings
+      if (prefixChar === ":") {
+        const extractor = func(evt.value);
+        silentRegisterCaller = function () {
+          if (evtName === "show") {
+            el.style.display = extractor($state, {}) ? "block" : "none";
+          } else if (attr === "html") {
+            el.innerHTML = extractor($state, {});
+          } else {
+            el.setAttribute(attr, extractor($state, {}));
+          }
+        };
+        silentRegisterCaller();
+        silentRegisterCaller = null;
       }
-      const extractor = func(evt.value);
-      silentRegisterCaller = function () {
-        const attr = evtName.replace(":", "");
-        if (attr === "show") {
-          el.style.display = extractor($state, {}) ? "block" : "none";
-        } else if (attr === "html") {
-          el.innerHTML = extractor($state, {});
-        } else {
-          el.setAttribute(attr, extractor($state, {}));
-        }
-      };
-      silentRegisterCaller();
-      silentRegisterCaller = null;
     });
     el.dataset.bound = "true";
   }
