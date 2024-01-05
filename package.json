@@ -12,6 +12,8 @@
   "author": "Awesome",
   "license": "MIT",
   "devDependencies": {
-    "esbuild": "^0.19.10"
+    "@hono/node-server": "^1.4.0",
+    "esbuild": "^0.19.10",
+    "hono": "^3.12.0"
   }
 }
