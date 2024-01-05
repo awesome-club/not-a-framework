@@ -7,7 +7,8 @@
   ],
   "main": "src/main.js",
   "scripts": {
-    "build": "esbuild src/main.js --bundle --minify --sourcemap --outfile=dist/naf.js"
+    "build": "esbuild src/main.js --bundle --minify --sourcemap --outfile=dist/naf.js",
+    "demo": "node ./demo/hono-http-counter/main.mjs"
   },
   "author": "Awesome",
   "license": "MIT",
