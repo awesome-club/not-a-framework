@@ -14,30 +14,30 @@ For more context, watch these videos:
 
 ### HTML Basic Example
 
+```html
+<!-- Define a count signal in the scope $state object. -->
+<main :state="{count: 0}">
+  <!-- Make a get call to "/count" to populate the element when loaded in the page.
+       Once loaded, bound the element's innert html to the count signal. -->
+  <h1 :html="count.val" @load="get:/count"></h1>
+
+  <!-- Decrease the count signal value by one on click. -->
+  <button @click="count.set(old => old - 1)">-1</button>
+  
+  <!-- Increase the count signal value by one on click. -->
+  <button @click="count.set(old => old + 1)">+1</button>
+  
+  <!-- Increase the count signal value by ten on double click.
+       Hide the button when the signal value is larger than ten. -->
+  <button @dblclick="count.set(old => old + 10)" :show="count.val < 10">+10</button>
+
+  <!-- Sent an async post request to the server on click with the name and value attributes as payload. -->
+  <button @click="post:/count" name="count" :value="count.val">Save</button>
+  
+  <!-- Sent an async delete request to the server on click. -->
+  <button @click="delete:/count">Delete</button>
+</main>
 ```
-  <!-- Define a count signal in the scope $state object. -->
-  <main :state="{count: 0}">
-    <!-- Make a get call to "/count" to populate the element when loaded in the page.
-         Once loaded, bound the element's innert html to the count signal. -->
-    <h1 :html="count.val" @load="get:/count"></h1>
-
-    <!-- Decrease the count signal value by one on click. -->
-    <button @click="count.set(old => old - 1)">-1</button>
-    
-    <!-- Increase the count signal value by one on click. -->
-    <button @click="count.set(old => old + 1)">+1</button>
-    
-    <!-- Increase the count signal value by ten on double click.
-         Hide the button when the signal value is larger than ten. -->
-    <button @dblclick="count.set(old => old + 10)" :show="count.val < 10">+10</button>
-
-    <!-- Sent an async post request to the server on click with the name and value attributes as payload. -->
-    <button @click="post:/count" name="count" :value="count.val">Save</button>
-    
-    <!-- Sent an async delete request to the server on click. -->
-    <button @click="delete:/count">Delete</button>
-  </main>
-  ```
 
 ### Events
 - You can capture all standard DOM events (`@click`, `@dblclick`, ...);
@@ -57,6 +57,7 @@ For more context, watch these videos:
   - `:state` accepts a JS objects and adds Signals to the local state;
   - `:html` to bind the element.innerHTML to a Signal;
   - `:show` to bind the element.style.display to `block` or `nonde`.
+
 
 | Number of Lines | Size Minified | Size Gzipped |
 |-----------------|---------------|--------------|
